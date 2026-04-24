@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm install *)",
+      "WebFetch(domain:escape-treasure-hunt.domino.page)",
+      "WebFetch(domain:docs.domino.run)"
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Szabadulószoba — Játékmester</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Szabadulószoba <span class="dim">— Játékmester</span></h1>
+    </header>
+
+    <section id="setup" class="card">
+      <h2>Új csapat</h2>
+      <form id="team-form" autocomplete="off">
+        <label>
+          Szoba
+          <select name="room" required>
+            <option value="">Válassz szobát…</option>
+            <option value="A Maja Birodalom">A Maja Birodalom</option>
+            <option value="A Mélység Titka">A Mélység Titka</option>
+            <option value="Alien vs Predator">Alien vs Predator</option>
+            <option value="Azték">Azték</option>
+            <option value="Bomb">Bomb</option>
+            <option value="Éjszaka az Egyiptomi Múzeumban">Éjszaka az Egyiptomi Múzeumban</option>
+            <option value="Japan">Japan</option>
+            <option value="Madness">Madness</option>
+            <option value="Prison">Prison</option>
+            <option value="Roxfort és a Legendás Állatok">Roxfort és a Legendás Állatok</option>
+            <option value="Tetthely">Tetthely</option>
+            <option value="Zombie">Zombie</option>
+          </select>
+        </label>
+
+        <label>
+          Csapat neve
+          <input type="text" name="teamName" required maxlength="60"
+                 placeholder="pl. A Kódfejtők" />
+        </label>
+
+        <button type="submit" id="create-btn">Csapat létrehozása és QR megjelenítése</button>
+      </form>
+      <p class="error" id="err" hidden></p>
+    </section>
+
+    <section id="result" class="card" hidden>
+      <h2 id="result-title"></h2>
+      <p class="subtitle" id="result-sub"></p>
+
+      <div id="qr" aria-label="Csapat csatlakozási QR-kód"></div>
+
+      <p class="hint">A játékosok beolvassák a csatlakozáshoz. Mindenki ugyanabba a csapatba lép be.</p>
+
+      <div class="url-row">
+        <input type="text" id="auth-url" readonly />
+        <button type="button" id="copy-btn">Másolás</button>
+      </div>
+
+      <button type="button" id="reset-btn">Új csapat indítása</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
