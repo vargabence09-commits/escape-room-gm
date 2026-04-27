@@ -11,18 +11,18 @@ const BASE_URL = (process.env.DOMINO_BASE_URL || 'https://escape-treasure-hunt.d
 const PORT = Number(process.env.PORT) || 3000;
 
 const ROOM_PATHS = {
-  'A Maja Birodalom': '/quests/07c35db4-fef5-432f-8eb0-776f1c776220',
-  'A Mélység Titka': '/quests/1bce46ab-ccf6-493a-8853-33a7be46984e',
-  'Alien vs Predator': '/quests/cb72f972-c10c-418c-9659-c4117f321275',
-  'Azték': '/quests/16d0f6ac-0621-4eb9-9af4-31519c4bb5eb',
-  'Bomb': '/quests/a74b2915-7eb3-42ca-9e11-0c3ae9db51b6',
-  'Éjszaka az Egyiptomi Múzeumban': '/quests/72cf62f2-6a12-44aa-8508-56dd66760392',
-  'Japan': '/quests/f4e39336-e264-4657-a1ab-7f2032892d80',
-  'Madness': '/quests/57894083-efec-4b98-8fca-eb215abbfea1',
-  'Prison': '/quests/cfb47cfc-61a5-434c-ac17-f09cda3a1205',
-  'Roxfort és a Legendás Állatok': '/quests/4a5427a7-c3b7-4c39-97c7-1224f3d8dc20',
-  'Tetthely': '/quests/48798e80-ced7-4858-8294-f0d0074129d6',
-  'Zombie': '/quests/2ed42676-2d25-44f5-bc8d-9ef2ba629323',
+  'A Maja Birodalom': '/quests/4369dd01-bffc-4a75-932b-dced322cb5a7',
+  'A Mélység Titka': '/quests/8ddda5f6-39b9-4b3e-85f7-cafa1d485de4',
+  'Alien vs Predator': '/quests/c41cacdd-8067-4b20-ab6f-3628ed01bf69',
+  'Azték': '/quests/ae0a8127-ffe2-4da3-af21-c694dc35bebc',
+  'Bomb': '/quests/dce93e74-1818-4623-b360-799227e60f56',
+  'Éjszaka az Egyiptomi Múzeumban': '/quests/7256a480-b92a-47fc-be8f-c0d25bb0d726',
+  'Japan': '/quests/30d467ad-a606-48ad-a5af-6d21628f6ee3',
+  'Madness': '/quests/f15525e2-59a9-4acf-a6eb-17396850be7d',
+  'Prison': '/quests/821834ab-b031-46dc-8d3a-b1068e783b3c',
+  'Roxfort és a Legendás Állatok': '/quests/6f104097-f8b7-4871-8619-668e4a00ee10',
+  'Tetthely': '/quests/67fab808-7a23-411f-83fc-08f025a8f2cf',
+  'Zombie': '/quests/5a5f2010-b6af-419b-85d5-5a25af92f08a',
 };
 
 if (!API_KEY) {
