@@ -2,7 +2,11 @@
 <html lang="hu">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0d1f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Szabadulószoba — Játékmester</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -15,6 +19,26 @@
     <section id="setup" class="card">
       <h2>Új csapat</h2>
       <form id="team-form" autocomplete="off">
+        <label>
+          <span class="label-row">
+            <span>Játékmester</span>
+            <button type="button" id="add-gm-btn" class="ghost-btn">+ Új játékmester hozzáadása</button>
+          </span>
+          <select name="gm" id="gm-select">
+            <option value="">— nincs megadva —</option>
+            <option value="Kristóf">Kristóf</option>
+            <option value="Péter">Péter</option>
+            <option value="Anna">Anna</option>
+          </select>
+        </label>
+
+        <div id="add-gm-row" class="add-row" hidden>
+          <input type="text" id="new-gm-input" placeholder="Új játékmester neve" maxlength="40"
+                 autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" />
+          <button type="button" id="confirm-add-gm" class="ghost-btn">Hozzáad</button>
+          <button type="button" id="cancel-add-gm" class="ghost-btn">Mégsem</button>
+        </div>
+
         <label>
           Szoba
           <select name="room" required>
@@ -37,6 +61,7 @@
         <label>
           Csapat neve
           <input type="text" name="teamName" required maxlength="60"
+                 autocapitalize="words" autocorrect="off" spellcheck="false"
                  placeholder="pl. A Kódfejtők" />
         </label>
 

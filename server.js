@@ -10,6 +10,13 @@ const API_KEY = process.env.DOMINO_API_KEY;
 const BASE_URL = (process.env.DOMINO_BASE_URL || 'https://escape-treasure-hunt.domino.page').replace(/\/$/, '');
 const PORT = Number(process.env.PORT) || 3000;
 
+const asciify = (s) =>
+  String(s)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // strip diacritics
+    .replace(/\s+/g, '_')
+    .replace(/[^A-Za-z0-9_-]/g, '');
+
 const ROOM_PATHS = {
   'A Maja Birodalom': '/quests/4369dd01-bffc-4a75-932b-dced322cb5a7',
   'A Mélység Titka': '/quests/8ddda5f6-39b9-4b3e-85f7-cafa1d485de4',
@@ -40,6 +47,7 @@ const slug = (s) =>
 app.post('/api/create-team', async (req, res) => {
   const teamName = typeof req.body?.teamName === 'string' ? req.body.teamName.trim() : '';
   const room = typeof req.body?.room === 'string' ? req.body.room.trim() : '';
+  const gm = typeof req.body?.gm === 'string' ? req.body.gm.trim() : '';
 
   if (!teamName || !room) {
     return res.status(400).json({ error: 'A csapat neve és a szoba kötelező.' });
@@ -48,6 +56,14 @@ app.post('/api/create-team', async (req, res) => {
   const roomPath = ROOM_PATHS[room];
   if (!roomPath) {
     return res.status(400).json({ error: `Ismeretlen szoba: ${room}` });
+  }
+
+  let gmParam = '';
+  if (gm) {
+    gmParam = asciify(gm);
+    if (!gmParam) {
+      return res.status(400).json({ error: 'Érvénytelen játékmester név.' });
+    }
   }
 
   const externalId = `${slug(room)}-${slug(teamName)}-${Date.now()}`;
@@ -82,7 +98,8 @@ app.post('/api/create-team', async (req, res) => {
       return res.status(502).json({ error: 'A Domino nem küldött vissza authTokent.', details: data });
     }
 
-    const authUrl = `${BASE_URL}${roomPath}?authToken=${encodeURIComponent(token)}`;
+    let authUrl = `${BASE_URL}${roomPath}?authToken=${encodeURIComponent(token)}`;
+    if (gmParam) authUrl += `&gm=${encodeURIComponent(gmParam)}`;
     const qrDataUrl = await QRCode.toDataURL(authUrl, {
       width: 512,
       margin: 2,
