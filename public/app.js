@@ -12,16 +12,19 @@ const createBtn = document.getElementById('create-btn');
 
 const gmSelect = document.getElementById('gm-select');
 const addGmBtn = document.getElementById('add-gm-btn');
+const removeGmBtn = document.getElementById('remove-gm-btn');
 const addGmRow = document.getElementById('add-gm-row');
 const newGmInput = document.getElementById('new-gm-input');
 const confirmAddGmBtn = document.getElementById('confirm-add-gm');
 const cancelAddGmBtn = document.getElementById('cancel-add-gm');
 
-const GM_STORAGE_KEY = 'customGameMasters';
+const BUILTIN_GMS = ['Kristóf', 'Péter', 'Anna'];
+const CUSTOM_GMS_KEY = 'customGameMasters';
+const REMOVED_GMS_KEY = 'removedGameMasters';
 
-function getCustomGms() {
+function readList(key) {
   try {
-    const raw = localStorage.getItem(GM_STORAGE_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return [];
     const arr = JSON.parse(raw);
     return Array.isArray(arr) ? arr.filter((x) => typeof x === 'string') : [];
@@ -30,38 +33,87 @@ function getCustomGms() {
   }
 }
 
-function saveCustomGms(list) {
-  localStorage.setItem(GM_STORAGE_KEY, JSON.stringify(list));
-}
+const getCustomGms = () => readList(CUSTOM_GMS_KEY);
+const saveCustomGms = (list) => localStorage.setItem(CUSTOM_GMS_KEY, JSON.stringify(list));
 
-function renderCustomGms() {
-  // Remove previously injected custom options
-  Array.from(gmSelect.querySelectorAll('option[data-custom="1"]')).forEach((o) => o.remove());
+const getRemovedGms = () => readList(REMOVED_GMS_KEY);
+const saveRemovedGms = (list) => localStorage.setItem(REMOVED_GMS_KEY, JSON.stringify(list));
+
+function renderGmOptions() {
+  const removed = new Set(getRemovedGms());
   const customs = getCustomGms();
-  for (const name of customs) {
+  const all = [...BUILTIN_GMS, ...customs].filter((name) => !removed.has(name));
+
+  // Keep the placeholder, replace everything else
+  Array.from(gmSelect.querySelectorAll('option:not([value=""])')).forEach((o) => o.remove());
+  for (const name of all) {
     const opt = document.createElement('option');
     opt.value = name;
     opt.textContent = name;
-    opt.dataset.custom = '1';
     gmSelect.appendChild(opt);
   }
+  updateRemoveBtn();
 }
 
-function addCustomGm(name) {
+function updateRemoveBtn() {
+  removeGmBtn.hidden = !gmSelect.value;
+}
+
+function addGm(name) {
   const trimmed = name.trim();
   if (!trimmed) return false;
-  const builtIns = ['Kristóf', 'Péter', 'Anna'];
-  if (builtIns.includes(trimmed)) return 'exists';
-  const list = getCustomGms();
-  if (list.includes(trimmed)) return 'exists';
-  list.push(trimmed);
-  saveCustomGms(list);
-  renderCustomGms();
+  // If it was previously removed, just un-remove it
+  const removed = getRemovedGms();
+  if (removed.includes(trimmed)) {
+    saveRemovedGms(removed.filter((n) => n !== trimmed));
+    renderGmOptions();
+    gmSelect.value = trimmed;
+    updateRemoveBtn();
+    return true;
+  }
+  // Already present?
+  if (BUILTIN_GMS.includes(trimmed) || getCustomGms().includes(trimmed)) {
+    gmSelect.value = trimmed;
+    updateRemoveBtn();
+    return 'exists';
+  }
+  const customs = getCustomGms();
+  customs.push(trimmed);
+  saveCustomGms(customs);
+  renderGmOptions();
   gmSelect.value = trimmed;
+  updateRemoveBtn();
   return true;
 }
 
-renderCustomGms();
+function removeGm(name) {
+  if (!name) return;
+  const customs = getCustomGms();
+  if (customs.includes(name)) {
+    saveCustomGms(customs.filter((n) => n !== name));
+  } else if (BUILTIN_GMS.includes(name)) {
+    const removed = getRemovedGms();
+    if (!removed.includes(name)) {
+      removed.push(name);
+      saveRemovedGms(removed);
+    }
+  }
+  renderGmOptions();
+  gmSelect.value = '';
+  updateRemoveBtn();
+}
+
+renderGmOptions();
+
+gmSelect.addEventListener('change', updateRemoveBtn);
+
+removeGmBtn.addEventListener('click', () => {
+  const name = gmSelect.value;
+  if (!name) return;
+  if (confirm(`Eltávolítod a "${name}" játékmestert a listából?`)) {
+    removeGm(name);
+  }
+});
 
 addGmBtn.addEventListener('click', () => {
   addGmRow.hidden = false;
@@ -76,7 +128,7 @@ cancelAddGmBtn.addEventListener('click', () => {
 });
 
 function commitAddGm() {
-  const result = addCustomGm(newGmInput.value);
+  const result = addGm(newGmInput.value);
   if (result === true) {
     addGmRow.hidden = true;
     addGmBtn.hidden = false;
@@ -84,7 +136,7 @@ function commitAddGm() {
     newGmInput.focus();
     newGmInput.select();
   }
-  // If false (empty), just keep the row open
+  // If false (empty), keep the row open
 }
 
 confirmAddGmBtn.addEventListener('click', commitAddGm);
