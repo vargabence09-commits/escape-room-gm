@@ -42,7 +42,13 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const slug = (s) =>
-  String(s).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  String(s)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // strip diacritics
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 
 app.post('/api/create-team', async (req, res) => {
   const teamName = typeof req.body?.teamName === 'string' ? req.body.teamName.trim() : '';
@@ -66,7 +72,10 @@ app.post('/api/create-team', async (req, res) => {
     }
   }
 
-  const externalId = `${slug(room)}-${slug(teamName)}-${Date.now()}`;
+  const idParts = [];
+  if (gm) idParts.push(slug(gm));
+  idParts.push(slug(room), slug(teamName), String(Date.now()));
+  const externalId = idParts.filter(Boolean).join('-');
 
   try {
     const dominoRes = await fetch(`${BASE_URL}/api/auth/external-lookup`, {
