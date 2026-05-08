@@ -8,8 +8,47 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const API_KEY = process.env.DOMINO_API_KEY;
-const BASE_URL = (process.env.DOMINO_BASE_URL || 'https://escape-treasure-hunt.domino.page').replace(/\/$/, '');
+const API_KEY_EN = process.env.DOMINO_API_KEY_EN || process.env.DOMINO_API_KEY;
 const PORT = Number(process.env.PORT) || 3000;
+
+const LANGUAGES = {
+  hu: {
+    baseUrl: 'https://escape-treasure-hunt.domino.page',
+    apiKey: API_KEY,
+    roomPaths: {
+      'A Maja Birodalom': '/quests/4369dd01-bffc-4a75-932b-dced322cb5a7',
+      'A Mélység Titka': '/quests/8ddda5f6-39b9-4b3e-85f7-cafa1d485de4',
+      'Alien vs Predator': '/quests/c41cacdd-8067-4b20-ab6f-3628ed01bf69',
+      'Azték': '/quests/7256a480-b92a-47fc-be8f-c0d25bb0d726',
+      'Bomb': '/quests/ae0a8127-ffe2-4da3-af21-c694dc35bebc',
+      'Éjszaka az Egyiptomi Múzeumban': '/quests/5a5f2010-b6af-419b-85d5-5a25af92f08a',
+      'Japan': '/quests/30d467ad-a606-48ad-a5af-6d21628f6ee3',
+      'Madness': '/quests/f15525e2-59a9-4acf-a6eb-17396850be7d',
+      'Prison': '/quests/821834ab-b031-46dc-8d3a-b1068e783b3c',
+      'Roxfort és a Legendás Állatok': '/quests/6f104097-f8b7-4871-8619-668e4a00ee10',
+      'Tetthely': '/quests/67fab808-7a23-411f-83fc-08f025a8f2cf',
+      'Zombie': '/quests/b4351eaf-08ee-477b-bf04-6c8d04ba21bb',
+    },
+  },
+  en: {
+    baseUrl: 'https://escape-room-hq.domino.page',
+    apiKey: API_KEY_EN,
+    roomPaths: {
+      'A Maja Birodalom': '/quests/77db6e97-3ee2-46c0-a13b-0157ca56fee3',
+      'A Mélység Titka': '/quests/193dd18c-37cb-4832-87be-ad9325224e0c',
+      'Alien vs Predator': '/quests/60289202-fd84-4077-9981-4a4be217a0c0',
+      'Azték': '/quests/222dc1a5-4165-438d-ad69-e8df4c40b276',
+      'Bomb': '/quests/d3b71374-048f-4403-a840-4645f2778cb4',
+      'Éjszaka az Egyiptomi Múzeumban': '/quests/5716bb4b-359c-4dff-a23a-ae3148acab63',
+      'Japan': '/quests/66255ed4-e8a7-4cce-81e0-1061ee0c0b52',
+      'Madness': '/quests/34863b8a-e6a5-46c0-b4f1-2092ac2e50bb',
+      'Prison': '/quests/3d76dfce-2231-4fc7-9bb7-b9a27d6d60af',
+      'Roxfort és a Legendás Állatok': '/quests/7a5e3ca2-1af2-4449-abc9-09254b379090',
+      'Tetthely': '/quests/a2ddaf17-763e-4cab-a01e-09f252605506',
+      'Zombie': '/quests/c7f9feb4-231f-4474-95f3-79be50cf0938',
+    },
+  },
+};
 
 const asciify = (s) =>
   String(s)
@@ -17,21 +56,6 @@ const asciify = (s) =>
     .replace(/[̀-ͯ]/g, '') // strip diacritics
     .replace(/\s+/g, '_')
     .replace(/[^A-Za-z0-9_-]/g, '');
-
-const ROOM_PATHS = {
-  'A Maja Birodalom': '/quests/4369dd01-bffc-4a75-932b-dced322cb5a7',
-  'A Mélység Titka': '/quests/8ddda5f6-39b9-4b3e-85f7-cafa1d485de4',
-  'Alien vs Predator': '/quests/c41cacdd-8067-4b20-ab6f-3628ed01bf69',
-  'Azték': '/quests/7256a480-b92a-47fc-be8f-c0d25bb0d726',
-  'Bomb': '/quests/ae0a8127-ffe2-4da3-af21-c694dc35bebc',
-  'Éjszaka az Egyiptomi Múzeumban': '/quests/5a5f2010-b6af-419b-85d5-5a25af92f08a',
-  'Japan': '/quests/30d467ad-a606-48ad-a5af-6d21628f6ee3',
-  'Madness': '/quests/f15525e2-59a9-4acf-a6eb-17396850be7d',
-  'Prison': '/quests/821834ab-b031-46dc-8d3a-b1068e783b3c',
-  'Roxfort és a Legendás Állatok': '/quests/6f104097-f8b7-4871-8619-668e4a00ee10',
-  'Tetthely': '/quests/67fab808-7a23-411f-83fc-08f025a8f2cf',
-  'Zombie': '/quests/b4351eaf-08ee-477b-bf04-6c8d04ba21bb',
-};
 
 if (!API_KEY) {
   console.error('Missing DOMINO_API_KEY in environment (.env).');
@@ -44,7 +68,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ---- Game master list (server-side, shared across devices) ------------------
 
-const BUILTIN_GMS = ['Flóra', 'Kristóf', 'Marcell', 'Leyla', 'Szonja', 'Tamás', 'Virág'];
+const BUILTIN_GMS = ['Flóra', 'Kristóf', 'Marcell', 'Nármin', 'Szonja', 'Tamás', 'Virág'];
 const DATA_DIR = path.join(__dirname, 'data');
 const GMS_FILE = path.join(DATA_DIR, 'gms.json');
 
@@ -120,15 +144,23 @@ app.post('/api/create-team', async (req, res) => {
   const teamName = typeof req.body?.teamName === 'string' ? req.body.teamName.trim() : '';
   const room = typeof req.body?.room === 'string' ? req.body.room.trim() : '';
   const gm = typeof req.body?.gm === 'string' ? req.body.gm.trim() : '';
+  const lang = (typeof req.body?.lang === 'string' ? req.body.lang.trim().toLowerCase() : 'hu') || 'hu';
 
   if (!teamName || !room) {
     return res.status(400).json({ error: 'A csapat neve és a szoba kötelező.' });
   }
 
-  const roomPath = ROOM_PATHS[room];
+  const cfg = LANGUAGES[lang];
+  if (!cfg) {
+    return res.status(400).json({ error: `Ismeretlen nyelv: ${lang}` });
+  }
+
+  const roomPath = cfg.roomPaths[room];
   if (!roomPath) {
     return res.status(400).json({ error: `Ismeretlen szoba: ${room}` });
   }
+
+  const BASE_URL = cfg.baseUrl;
 
   let gmParam = '';
   if (gm) {
@@ -148,7 +180,7 @@ app.post('/api/create-team', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
+        'x-api-key': cfg.apiKey,
       },
       body: JSON.stringify({
         externalId,
@@ -188,6 +220,7 @@ app.post('/api/create-team', async (req, res) => {
       externalId,
       teamName,
       room,
+      lang,
       expiresAt: data?.apiKey?.expiresAt ?? null,
     });
   } catch (err) {

@@ -7,42 +7,50 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Szabadulószoba — Játékmester</title>
+  <title data-i18n="title">Szabadulószoba — Játékmester</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="wrap">
-    <header>
-      <h1>Szabadulószoba <span class="dim">— Játékmester</span></h1>
+    <header class="page-header">
+      <h1>
+        <span data-i18n="appTitle">Szabadulószoba</span>
+        <span class="dim">— <span data-i18n="appSubtitle">Játékmester</span></span>
+      </h1>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang="hu" aria-pressed="true">HU</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
     </header>
 
     <section id="setup" class="card">
-      <h2>Új csapat</h2>
+      <h2 data-i18n="newTeam">Új csapat</h2>
       <form id="team-form" autocomplete="off">
         <label>
           <span class="label-row">
-            <span>Játékmester</span>
+            <span data-i18n="gameMaster">Játékmester</span>
             <span class="label-actions">
-              <button type="button" id="remove-gm-btn" class="ghost-btn" hidden>× Eltávolítás</button>
-              <button type="button" id="add-gm-btn" class="ghost-btn">+ Új játékmester</button>
+              <button type="button" id="remove-gm-btn" class="ghost-btn" hidden data-i18n="removeGm">× Eltávolítás</button>
+              <button type="button" id="add-gm-btn" class="ghost-btn" data-i18n="addGm">+ Új játékmester</button>
             </span>
           </span>
           <select name="gm" id="gm-select">
-            <option value="">— nincs megadva —</option>
+            <option value="" data-i18n="noGm">— nincs megadva —</option>
           </select>
         </label>
 
         <div id="add-gm-row" class="add-row" hidden>
-          <input type="text" id="new-gm-input" placeholder="Új játékmester neve" maxlength="40"
-                 autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" />
-          <button type="button" id="confirm-add-gm" class="ghost-btn">Hozzáad</button>
-          <button type="button" id="cancel-add-gm" class="ghost-btn">Mégsem</button>
+          <input type="text" id="new-gm-input" maxlength="40"
+                 autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false"
+                 data-i18n-placeholder="newGmPlaceholder" placeholder="Új játékmester neve" />
+          <button type="button" id="confirm-add-gm" class="ghost-btn" data-i18n="addBtn">Hozzáad</button>
+          <button type="button" id="cancel-add-gm" class="ghost-btn" data-i18n="cancelBtn">Mégsem</button>
         </div>
 
         <label>
-          Szoba
-          <select name="room" required>
-            <option value="">Válassz szobát…</option>
+          <span data-i18n="room">Szoba</span>
+          <select name="room" id="room-select" required>
+            <option value="" data-i18n="chooseRoom">Válassz szobát…</option>
             <option value="A Maja Birodalom">A Maja Birodalom</option>
             <option value="A Mélység Titka">A Mélység Titka</option>
             <option value="Alien vs Predator">Alien vs Predator</option>
@@ -59,13 +67,13 @@
         </label>
 
         <label>
-          Csapat neve
+          <span data-i18n="teamName">Csapat neve</span>
           <input type="text" name="teamName" required maxlength="60"
                  autocapitalize="words" autocorrect="off" spellcheck="false"
-                 placeholder="pl. A Kódfejtők" />
+                 data-i18n-placeholder="teamPlaceholder" placeholder="pl. A Kódfejtők" />
         </label>
 
-        <button type="submit" id="create-btn">Csapat létrehozása és QR megjelenítése</button>
+        <button type="submit" id="create-btn" data-i18n="createBtn">Csapat létrehozása és QR megjelenítése</button>
       </form>
       <p class="error" id="err" hidden></p>
     </section>
@@ -74,16 +82,16 @@
       <h2 id="result-title"></h2>
       <p class="subtitle" id="result-sub"></p>
 
-      <div id="qr" aria-label="Csapat csatlakozási QR-kód"></div>
+      <div id="qr" data-i18n-aria-label="qrAria" aria-label="Csapat csatlakozási QR-kód"></div>
 
-      <p class="hint">A játékosok beolvassák a csatlakozáshoz. Mindenki ugyanabba a csapatba lép be.</p>
+      <p class="hint" data-i18n="scanHint">A játékosok beolvassák a csatlakozáshoz. Mindenki ugyanabba a csapatba lép be.</p>
 
       <div class="url-row">
         <input type="text" id="auth-url" readonly />
-        <button type="button" id="copy-btn">Másolás</button>
+        <button type="button" id="copy-btn" data-i18n="copyBtn">Másolás</button>
       </div>
 
-      <button type="button" id="reset-btn">Új csapat indítása</button>
+      <button type="button" id="reset-btn" data-i18n="resetBtn">Új csapat indítása</button>
     </section>
   </main>
 
