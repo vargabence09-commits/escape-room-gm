@@ -18,33 +18,14 @@ const newGmInput = document.getElementById('new-gm-input');
 const confirmAddGmBtn = document.getElementById('confirm-add-gm');
 const cancelAddGmBtn = document.getElementById('cancel-add-gm');
 
-const BUILTIN_GMS = ['Kristóf', 'Péter', 'Anna'];
-const CUSTOM_GMS_KEY = 'customGameMasters';
-const REMOVED_GMS_KEY = 'removedGameMasters';
-
-function readList(key) {
-  try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr.filter((x) => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
-}
-
-const getCustomGms = () => readList(CUSTOM_GMS_KEY);
-const saveCustomGms = (list) => localStorage.setItem(CUSTOM_GMS_KEY, JSON.stringify(list));
-
-const getRemovedGms = () => readList(REMOVED_GMS_KEY);
-const saveRemovedGms = (list) => localStorage.setItem(REMOVED_GMS_KEY, JSON.stringify(list));
+const FALLBACK_BUILTINS = ['Flóra', 'Kristóf', 'Marcell', 'Leyla', 'Szonja', 'Tamás', 'Virág'];
+let gmData = { builtins: FALLBACK_BUILTINS, custom: [], removed: [] };
 
 function renderGmOptions() {
-  const removed = new Set(getRemovedGms());
-  const customs = getCustomGms();
-  const all = [...BUILTIN_GMS, ...customs].filter((name) => !removed.has(name));
+  const removed = new Set(gmData.removed);
+  const all = [...gmData.builtins, ...gmData.custom].filter((name) => !removed.has(name));
+  const previousValue = gmSelect.value;
 
-  // Keep the placeholder, replace everything else
   Array.from(gmSelect.querySelectorAll('option:not([value=""])')).forEach((o) => o.remove());
   for (const name of all) {
     const opt = document.createElement('option');
@@ -52,6 +33,7 @@ function renderGmOptions() {
     opt.textContent = name;
     gmSelect.appendChild(opt);
   }
+  if (all.includes(previousValue)) gmSelect.value = previousValue;
   updateRemoveBtn();
 }
 
@@ -59,51 +41,69 @@ function updateRemoveBtn() {
   removeGmBtn.hidden = !gmSelect.value;
 }
 
-function addGm(name) {
+async function fetchGms() {
+  try {
+    const r = await fetch('/api/gms');
+    if (!r.ok) throw new Error('Failed to fetch GMs');
+    gmData = await r.json();
+  } catch (e) {
+    console.warn('Could not load GM list, using built-ins:', e);
+  }
+  renderGmOptions();
+}
+
+async function addGmRequest(name) {
   const trimmed = name.trim();
   if (!trimmed) return false;
-  // If it was previously removed, just un-remove it
-  const removed = getRemovedGms();
-  if (removed.includes(trimmed)) {
-    saveRemovedGms(removed.filter((n) => n !== trimmed));
-    renderGmOptions();
-    gmSelect.value = trimmed;
-    updateRemoveBtn();
-    return true;
-  }
-  // Already present?
-  if (BUILTIN_GMS.includes(trimmed) || getCustomGms().includes(trimmed)) {
+  const all = [...gmData.builtins, ...gmData.custom].filter((n) => !gmData.removed.includes(n));
+  if (all.includes(trimmed)) {
     gmSelect.value = trimmed;
     updateRemoveBtn();
     return 'exists';
   }
-  const customs = getCustomGms();
-  customs.push(trimmed);
-  saveCustomGms(customs);
-  renderGmOptions();
-  gmSelect.value = trimmed;
-  updateRemoveBtn();
-  return true;
-}
-
-function removeGm(name) {
-  if (!name) return;
-  const customs = getCustomGms();
-  if (customs.includes(name)) {
-    saveCustomGms(customs.filter((n) => n !== name));
-  } else if (BUILTIN_GMS.includes(name)) {
-    const removed = getRemovedGms();
-    if (!removed.includes(name)) {
-      removed.push(name);
-      saveRemovedGms(removed);
+  try {
+    const r = await fetch('/api/gms/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: trimmed }),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || 'Hiba a hozzáadásnál.');
     }
+    gmData = await r.json();
+    renderGmOptions();
+    gmSelect.value = trimmed;
+    updateRemoveBtn();
+    return true;
+  } catch (e) {
+    alert(e.message);
+    return false;
   }
-  renderGmOptions();
-  gmSelect.value = '';
-  updateRemoveBtn();
 }
 
-renderGmOptions();
+async function removeGmRequest(name) {
+  if (!name) return;
+  try {
+    const r = await fetch('/api/gms/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || 'Hiba az eltávolításnál.');
+    }
+    gmData = await r.json();
+    gmSelect.value = '';
+    renderGmOptions();
+    updateRemoveBtn();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+fetchGms();
 
 gmSelect.addEventListener('change', updateRemoveBtn);
 
@@ -111,7 +111,7 @@ removeGmBtn.addEventListener('click', () => {
   const name = gmSelect.value;
   if (!name) return;
   if (confirm(`Eltávolítod a "${name}" játékmestert a listából?`)) {
-    removeGm(name);
+    removeGmRequest(name);
   }
 });
 
@@ -127,16 +127,17 @@ cancelAddGmBtn.addEventListener('click', () => {
   addGmBtn.hidden = false;
 });
 
-function commitAddGm() {
-  const result = addGm(newGmInput.value);
+async function commitAddGm() {
+  confirmAddGmBtn.disabled = true;
+  const result = await addGmRequest(newGmInput.value);
+  confirmAddGmBtn.disabled = false;
   if (result === true) {
     addGmRow.hidden = true;
     addGmBtn.hidden = false;
   } else if (result === 'exists') {
-    newGmInput.focus();
-    newGmInput.select();
+    addGmRow.hidden = true;
+    addGmBtn.hidden = false;
   }
-  // If false (empty), keep the row open
 }
 
 confirmAddGmBtn.addEventListener('click', commitAddGm);

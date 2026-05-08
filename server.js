@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import QRCode from 'qrcode';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -40,6 +41,71 @@ if (!API_KEY) {
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ---- Game master list (server-side, shared across devices) ------------------
+
+const BUILTIN_GMS = ['Flóra', 'Kristóf', 'Marcell', 'Leyla', 'Szonja', 'Tamás', 'Virág'];
+const DATA_DIR = path.join(__dirname, 'data');
+const GMS_FILE = path.join(DATA_DIR, 'gms.json');
+
+let gmState = { custom: [], removed: [] };
+
+function loadGmState() {
+  try {
+    if (fs.existsSync(GMS_FILE)) {
+      const parsed = JSON.parse(fs.readFileSync(GMS_FILE, 'utf8'));
+      gmState = {
+        custom: Array.isArray(parsed?.custom) ? parsed.custom.filter((x) => typeof x === 'string') : [],
+        removed: Array.isArray(parsed?.removed) ? parsed.removed.filter((x) => typeof x === 'string') : [],
+      };
+    }
+  } catch (e) {
+    console.error('Failed to load GM state:', e.message);
+  }
+}
+
+function saveGmState() {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(GMS_FILE, JSON.stringify(gmState, null, 2));
+  } catch (e) {
+    console.error('Failed to save GM state:', e.message);
+  }
+}
+
+loadGmState();
+
+const gmPayload = () => ({ builtins: BUILTIN_GMS, custom: gmState.custom, removed: gmState.removed });
+
+app.get('/api/gms', (req, res) => {
+  res.json(gmPayload());
+});
+
+app.post('/api/gms/add', (req, res) => {
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  if (!name) return res.status(400).json({ error: 'A név kötelező.' });
+  if (name.length > 40) return res.status(400).json({ error: 'A név túl hosszú.' });
+  if (gmState.removed.includes(name)) {
+    gmState.removed = gmState.removed.filter((n) => n !== name);
+  }
+  if (!BUILTIN_GMS.includes(name) && !gmState.custom.includes(name)) {
+    gmState.custom.push(name);
+  }
+  saveGmState();
+  res.json(gmPayload());
+});
+
+app.post('/api/gms/remove', (req, res) => {
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  if (!name) return res.status(400).json({ error: 'A név kötelező.' });
+  if (gmState.custom.includes(name)) {
+    gmState.custom = gmState.custom.filter((n) => n !== name);
+  } else if (BUILTIN_GMS.includes(name) && !gmState.removed.includes(name)) {
+    gmState.removed.push(name);
+  }
+  saveGmState();
+  res.json(gmPayload());
+});
 
 const slug = (s) =>
   String(s)
