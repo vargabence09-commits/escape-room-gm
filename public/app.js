@@ -42,6 +42,11 @@ const I18N = {
       'Roxfort és a Legendás Állatok': 'Roxfort és a Legendás Állatok',
       'Tetthely': 'Tetthely',
       'Zombie': 'Zombie',
+      'Jungle Debrecen': 'Jungle Debrecen',
+      'Bomb Debrecen': 'Bomb Debrecen',
+      'Prison Debrecen': 'Prison Debrecen',
+      'Múmia Debrecen': 'Múmia Debrecen',
+      'Madness Debrecen': 'Madness Debrecen',
     },
   },
   en: {
@@ -114,12 +119,24 @@ function applyI18n() {
     if (dict[key] != null) el.setAttribute('aria-label', dict[key]);
   });
 
-  // Localize room dropdown labels (keep canonical HU value)
-  document.querySelectorAll('#room-select option').forEach((opt) => {
+  // Localize room dropdown labels and hide rooms not available in the current language
+  const roomSelect = document.getElementById('room-select');
+  roomSelect.querySelectorAll('option').forEach((opt) => {
     if (!opt.value) return;
     const label = dict.rooms[opt.value];
-    if (label) opt.textContent = label;
+    if (label) {
+      opt.textContent = label;
+      opt.hidden = false;
+      opt.disabled = false;
+    } else {
+      opt.hidden = true;
+      opt.disabled = true;
+    }
   });
+  // Reset selection if the currently-picked room isn't available in this language
+  if (roomSelect.value && !dict.rooms[roomSelect.value]) {
+    roomSelect.value = '';
+  }
 
   // Update toggle pressed state
   document.querySelectorAll('.lang-toggle [data-lang]').forEach((btn) => {

@@ -28,6 +28,11 @@ const LANGUAGES = {
       'Roxfort és a Legendás Állatok': '/quests/6f104097-f8b7-4871-8619-668e4a00ee10',
       'Tetthely': '/quests/67fab808-7a23-411f-83fc-08f025a8f2cf',
       'Zombie': '/quests/b4351eaf-08ee-477b-bf04-6c8d04ba21bb',
+      'Jungle Debrecen': '/quests/08779f74-e879-476e-9a1f-ad08e3656ca9',
+      'Bomb Debrecen': '/quests/6765b4fa-4d6e-4716-ac49-e2e7ae568815',
+      'Prison Debrecen': '/quests/249b60cc-c535-41c1-8761-87419af22ea0',
+      'Múmia Debrecen': '/quests/8183e71f-18d3-4bc9-88eb-038f9e427bdb',
+      'Madness Debrecen': '/quests/fd3b3645-9dba-42e0-b779-6646f3446df0',
     },
   },
   en: {
