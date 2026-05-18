@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
       "port": 3000
+    },
+    {
+      "name": "hq-landing",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["C:/Users/varga/Downloads/escape-room-hq-landing/server.js"],
+      "port": 4000
     }
   ]
 }
